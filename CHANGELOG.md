@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.2 (2026-10-12)
+* Code comments and maintenance notes (`MAINTENANCE.md`) in English; the interface and the
+  tooltips stay in English and French. No functional change.
+
 ## 1.0.1 (2026-10-12)
 * The reports (geometry, field loss, output check) now follow the interface language. After a
   language switch they stayed in the language used for Compute.

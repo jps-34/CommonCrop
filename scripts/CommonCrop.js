@@ -7,57 +7,58 @@
    crop edges. Creates new images, never modifies the masters. Interface in English or French.
 
 /*
- * CommonCrop.js  v1.0.1
+ * CommonCrop.js  v1.0.2
  * Copyright (c) 2026 Jacques Pouyaud. MIT License (see LICENSE).
- * Code écrit par Claude (Anthropic), sous la direction de Jacques Pouyaud.
+ * Code written by Claude (Anthropic), under the direction of Jacques Pouyaud.
  * https://github.com/jps-34/CommonCrop
  *
- * Principe
- *   Les masters intégrés en composition « full » (Astro Pixel Processor et
- *   consorts) ont 0 là où aucune brute ne couvre. La boîte englobante des
- *   pixels non nuls est l'union des brutes ; son excédent par rapport à la
- *   taille d'une brute est l'étalement (dithering, décalages de pointage
- *   entre nuits, rotation). La zone couverte par toutes les brutes est cette
- *   boîte réduite de l'excédent de chaque côté : exact pour des translations
- *   et pour une rotation autour du centre, approché sinon.
- *   Le recadrage commun est l'intersection de ces zones sur tous les canaux,
- *   moins une marge de sécurité. Un contrôle de sortie mesure le bruit sur
- *   une bande de 16 px au bord du recadrage, rapporté au bruit 300 px plus
- *   loin, par côté et par canal (médiane sur 20 tronçons) : un bord encore
- *   dans la rampe de couverture partielle ressort à plus de 1,10.
- *   La perte de champ par filtre (part du champ d'une brute non couverte par
- *   toutes les brutes de ce filtre) sert d'indicateur de qualité de
- *   l'acquisition, classé du pire au meilleur.
+ * Principle
+ *   Masters integrated in 'full' composition (Astro Pixel Processor and
+ *   others) are 0 where no sub-frame covers. The bounding box of the non-zero
+ *   pixels is the union of the sub-frames; its excess over the size of one
+ *   sub-frame is the spread (dithering, pointing offsets between nights,
+ *   rotation). The area covered by every sub-frame is that box shrunk by the
+ *   excess on each side: exact for translations and for a rotation about the
+ *   centre, approximate otherwise.
+ *   The common crop is the intersection of these areas over all channels,
+ *   minus a safety margin. An output check measures the noise in a 16 px band
+ *   at the crop edge, divided by the noise 300 px further in, per side and per
+ *   channel (median over 20 segments): an edge still inside the partial
+ *   coverage ramp comes out above 1.10.
+ *   The field loss per filter (share of one frame's field not covered by every
+ *   sub-frame of that filter) serves as an acquisition quality indicator,
+ *   ranked worst first.
  *
- * v1.0.1 : les rapports suivent la langue choisie (ils restaient dans la langue du
- *   calcul après un changement de langue).
- * v1.0.0 : première version publiée. PixInsight 1.9.4 et plus (moteur V8).
+ * v1.0.2: code comments and maintenance notes in English. No functional change.
+ * v1.0.1: the reports follow the selected language (they stayed in the
+ *   language of the computation after a language switch).
+ * v1.0.0: first published version. PixInsight 1.9.4 and later (V8 engine).
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.0.1";
+var VERSION = "1.0.2";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";
 var TIPS = {};
 
-// Emplacements à nom imposé. Sorties <nom>_crop ; entrées renommées <nom>_master.
+// Slots with fixed names. Outputs <name>_crop; inputs renamed <name>_master.
 var SLOT_NAMES = [ "L", "R", "G", "B", "SII", "Ha", "OIII", "AUX1", "AUX2" ];
 var OUT_SUFFIX = "_crop";
 var IN_SUFFIX = "_master";
 var PREVIEW_ID = "CommonCrop";
 
-var DEFAULT_MARGIN = 10;      // px, proposée ; le contrôle de sortie dit si elle suffit
+var DEFAULT_MARGIN = 10;      // px, suggested; the output check tells whether it is enough
 var MARGIN_MIN = 2;
 var MARGIN_MAX = 200;
-var DEFAULT_THRESHOLD = 1.10; // ratio de bruit bord / intérieur toléré
-var BAND_WIDTH = 16;          // bande de contrôle au bord du recadrage
-var REF_DEPTH = 300;          // distance de la bande de référence
-var REF_WIDTH = 100;          // largeur de la bande de référence
-var N_SEGMENTS = 20;          // tronçons par côté
-var TARGET_WINDOW_W = 1200;   // largeur approximative des fenêtres créées (px écran)
+var DEFAULT_THRESHOLD = 1.10; // edge / interior noise ratio tolerated
+var BAND_WIDTH = 16;          // check band at the crop edge
+var REF_DEPTH = 300;          // distance of the reference band
+var REF_WIDTH = 100;          // width of the reference band
+var N_SEGMENTS = 20;          // segments per side
+var TARGET_WINDOW_W = 1200;   // approximate width of the created windows (screen px)
 
-// Résolution native de quelques caméras (bin 1), d'après le mot-clé INSTRUME.
+// Native resolution of a few cameras (bin 1), from the INSTRUME keyword.
 var CAMERA_SIZES = [
    { match: /QHY\s*600/i,  w: 9576, h: 6388 },
    { match: /ASI\s*6200/i, w: 9576, h: 6388 },
@@ -65,7 +66,7 @@ var CAMERA_SIZES = [
    { match: /QHY\s*268/i,  w: 6252, h: 4176 } ];
 
 // ============================================================================
-// Langue
+// Language
 // ============================================================================
 
 function detectLanguage()
@@ -113,7 +114,7 @@ function L( fr, en )
 }
 
 // ============================================================================
-// Réglages mémorisés (la marge ne l'est pas : la valeur proposée revient à chaque lancement)
+// Saved settings (not the margin: the suggested value comes back at each launch)
 // ============================================================================
 
 var TP = { frameW: 0, frameH: 0, threshold: DEFAULT_THRESHOLD, preview: true, rename: true };
@@ -139,12 +140,12 @@ function loadSettings()
    catch ( e ) {}
 }
 
-// État conservé quand le dialogue se rouvre (changement de langue)
-// Les rapports sont gardés sous forme de données et régénérés dans la langue courante
+// State kept when the dialog reopens (language switch).
+// Reports are kept as data and regenerated in the current language.
 var STATE = { slotIds: {}, margin: DEFAULT_MARGIN, res: null, checks: null, extra: null, applied: null };
 
 // ============================================================================
-// Outils
+// Tools
 // ============================================================================
 
 function log( s )
@@ -194,7 +195,7 @@ function mtf( m, x )
    return ( m - 1 ) * x / ( ( 2 * m - 1 ) * x - m );
 }
 
-// k-ième plus petit élément de a[0..n-1] (quickselect, modifie a)
+// k-th smallest element of a[0..n-1] (quickselect, modifies a)
 function selectKth( a, n, k )
 {
    var lo = 0, hi = n - 1;
@@ -219,7 +220,7 @@ function selectKth( a, n, k )
    return a[k];
 }
 
-// médiane de a[0..n-1] (a est copié)
+// median of a[0..n-1] (a is copied)
 function medianOf( a, n )
 {
    if ( n <= 0 )
@@ -237,7 +238,7 @@ function medianOf( a, n )
    return 0.5 * ( m1 + m2 );
 }
 
-// 1.4826 * MAD : écart-type robuste
+// 1.4826 * MAD: robust standard deviation
 function madNoise( d, n )
 {
    if ( n < 50 )
@@ -277,7 +278,7 @@ function pad( s, n )
 }
 
 // ============================================================================
-// Mots-clés FITS
+// FITS keywords
 // ============================================================================
 
 function keywordValue( window, name )
@@ -298,7 +299,7 @@ function keywordValue( window, name )
    return "";
 }
 
-// Nom d'emplacement déduit d'un texte (FILTER, nom de fichier, identifiant), ou ""
+// Slot name deduced from a text (FILTER, file name, identifier), or ""
 function slotFromText( text )
 {
    if ( !text )
@@ -328,7 +329,7 @@ function slotForWindow( window )
    return s;
 }
 
-// Taille de brute déduite de l'en-tête (INSTRUME, XBINNING), ou null
+// Frame size deduced from the header (INSTRUME, XBINNING), or null
 function frameSizeFromHeader( window )
 {
    var instr = keywordValue( window, "INSTRUME" );
@@ -345,7 +346,7 @@ function frameSizeFromHeader( window )
 }
 
 // ============================================================================
-// Accès aux pixels (ImageIterator : une ligne = un tableau typé)
+// Pixel access (ImageIterator: one row = one typed array)
 // ============================================================================
 
 function rowsOf( img, channel )
@@ -357,7 +358,7 @@ function rowsOf( img, channel )
    return rows;
 }
 
-// Boîte englobante des pixels non nuls (canal 0), en marges depuis chaque bord
+// Bounding box of the non-zero pixels (channel 0), as margins from each edge
 function nonNullBBox( img )
 {
    var W = img.width, H = img.height;
@@ -395,8 +396,8 @@ function nonNullBBox( img )
             width: right - left + 1, height: bottom - top + 1 };
 }
 
-// Plus grand rectangle axial inscrit dans la zone non nulle : estimation de
-// secours de la taille des brutes (approximative, de l'ordre de 30 px)
+// Largest axis-aligned rectangle inscribed in the non-zero area: fallback
+// estimate of the frame size (approximate, about 30 px)
 function inscribedRect( img )
 {
    var W = img.width, H = img.height;
@@ -437,8 +438,8 @@ function inscribedRect( img )
    return best;
 }
 
-// Bruit par tronçon sur une bande du canal 0. alongX : bande horizontale,
-// tronçons et différences selon x ; sinon bande verticale, selon y.
+// Noise per segment over a band of channel 0. alongX: horizontal band,
+// segments and differences along x; otherwise vertical band, along y.
 function bandNoise( rows, rect, alongX )
 {
    var w = rect.width, h = rect.height;
@@ -477,7 +478,7 @@ function bandNoise( rows, rect, alongX )
    return out;
 }
 
-// Contrôle de sortie : ratio bruit bande de bord / bande de référence, par côté
+// Output check: noise ratio edge band / reference band, per side
 function edgeCheck( img, crop )
 {
    var rows = rowsOf( img, 0 );
@@ -505,7 +506,7 @@ function edgeCheck( img, crop )
 }
 
 // ============================================================================
-// Recadrage commun et indicateurs
+// Common crop and indicators
 // ============================================================================
 
 var SIDES = [ "left", "right", "top", "bottom" ];
@@ -515,7 +516,7 @@ function sideName( s )
    return { left: L( "gauche", "left" ), right: L( "droite", "right" ), top: L( "haut", "top" ), bottom: L( "bas", "bottom" ) }[s];
 }
 
-// slots : tableau de { name, view }
+// slots: array of { name, view }
 function computeCrop( slots, margin, frameW, frameH )
 {
    if ( slots.length == 0 )
@@ -568,7 +569,7 @@ function computeCrop( slots, margin, frameW, frameH )
          sy = Math.max( sy, 0 );
       }
       var m = { left: bb.left + sx, right: bb.right + sx, top: bb.top + sy, bottom: bb.bottom + sy };
-      // perte de champ par rapport à une brute : part du champ d'une brute non couverte par toutes les brutes
+      // field loss relative to one frame: share of a frame's field not covered by every sub-frame
       var loss = 1 - ( fw - sx ) * ( fh - sy ) / ( fw * fh );
       perChannel.push( { name: slots[c].name, view: slots[c].view, bbox: bb, spreadX: sx, spreadY: sy,
                          frameW: fw, frameH: fh, margins: m, loss: loss } );
@@ -609,7 +610,7 @@ function computeCrop( slots, margin, frameW, frameH )
 }
 
 // ============================================================================
-// Création des images recadrées
+// Creation of the cropped images
 // ============================================================================
 
 function applyAutoSTF( view )
@@ -688,7 +689,7 @@ function createCroppedWindow( srcView, crop, id )
 }
 
 // ============================================================================
-// Previews de contrôle
+// Check previews
 // ============================================================================
 
 function setCropPreview( window, crop )
@@ -723,7 +724,7 @@ function removeCropPreview( window )
 }
 
 // ============================================================================
-// Rapports (HTML pour le dialogue, texte pour la console)
+// Reports (HTML for the dialog, text for the console)
 // ============================================================================
 
 function pct( x )
@@ -823,7 +824,7 @@ function checkReport( checks, threshold )
 }
 
 // ============================================================================
-// Infobulles
+// Tooltips
 // ============================================================================
 
 function buildTips()
@@ -872,7 +873,7 @@ function buildTips()
 }
 
 // ============================================================================
-// Dialogue
+// Dialog
 // ============================================================================
 
 var CropDialog = class extends Dialog {
@@ -884,7 +885,7 @@ constructor()
    this.relaunch = false;
    this.slots = [];
 
-   // --- aide et langue -------------------------------------------------------
+   // --- help and language ---------------------------------------------------
    this.helpLabel = new Label( this );
    this.helpLabel.useRichText = true;
    this.helpLabel.wordWrapping = true;
@@ -919,7 +920,7 @@ constructor()
    topRow.add( this.langLabel );
    topRow.add( this.langCombo );
 
-   // --- chargement -----------------------------------------------------------
+   // --- loading -------------------------------------------------------------
    this.openButton = new PushButton( this );
    this.openButton.text = L( "Ouvrir des fichiers...", "Open files..." );
    this.openButton.toolTip = TIPS.open;
@@ -949,7 +950,7 @@ constructor()
    for ( var i = 0; i < SLOT_NAMES.length; ++i )
       this.slotsGroup.sizer.add( this.makeSlotRow( SLOT_NAMES[i], labelWidth ) );
 
-   // --- paramètres -----------------------------------------------------------
+   // --- settings ------------------------------------------------------------
    this.paramsGroup = new GroupBox( this );
    this.paramsGroup.title = L( "Réglages", "Settings" );
    this.paramsGroup.sizer = new VerticalSizer;
@@ -1039,7 +1040,7 @@ constructor()
    this.paramsGroup.sizer.add( row1 );
    this.paramsGroup.sizer.add( row2 );
 
-   // --- rapports -------------------------------------------------------------
+   // --- reports -------------------------------------------------------------
    this.geomGroup = new GroupBox( this );
    this.geomGroup.title = L( "Géométrie et perte de champ par filtre", "Geometry and field loss per filter" );
    this.geomGroup.toolTip = TIPS.geometry;
@@ -1066,7 +1067,7 @@ constructor()
    this.checkLabel.toolTip = TIPS.check;
    this.checkGroup.sizer.add( this.checkLabel );
 
-   // --- boutons --------------------------------------------------------------
+   // --- buttons -------------------------------------------------------------
    this.computeButton = new PushButton( this );
    this.computeButton.text = L( "Calculer", "Compute" );
    this.computeButton.toolTip = TIPS.compute;
@@ -1195,7 +1196,7 @@ filledSlots()
    return f;
 }
 
-// Réaffiche les rapports à partir des données, dans la langue courante
+// Redisplays the reports from the data, in the current language
 renderReports()
 {
    if ( STATE.res == null )
@@ -1245,7 +1246,7 @@ restoreState()
    }
 }
 
-// Range une fenêtre dans l'emplacement déduit de son filtre ; AUX1/AUX2 sinon
+// Puts a window in the slot deduced from its filter; AUX1/AUX2 otherwise
 assignWindow( window, logLines )
 {
    var name = slotForWindow( window );
@@ -1446,7 +1447,7 @@ doApply()
 };
 
 // ============================================================================
-// Point d'entrée
+// Entry point
 // ============================================================================
 
 function main()

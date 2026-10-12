@@ -55,7 +55,7 @@ and about fifteen seconds to create the six cropped images.
 
 | File | PixInsight |
 |---|---|
-| `scripts/CommonCrop.js` (1.0.0) | 1.9.4 and later (V8 JavaScript engine) |
+| `scripts/CommonCrop.js` (1.0.1) | 1.9.4 and later (V8 JavaScript engine) |
 
 Inputs: integrated masters of the same target, **all integrated on the same reference frame in
 *full* composition**, so that they have the same dimensions and the uncovered areas are zero. This

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1 (2026-10-12)
+* The reports (geometry, field loss, output check) now follow the interface language. After a
+  language switch they stayed in the language used for Compute.
+
 ## 1.0.0 (2026-10-12)
 * First published version. PixInsight 1.9.4 and later (V8 engine).
 * Common crop of up to nine masters (L, R, G, B, SII, Ha, OIII, AUX1, AUX2) on the area covered

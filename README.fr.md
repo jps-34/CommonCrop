@@ -57,7 +57,7 @@ création des six images recadrées une quinzaine de secondes.
 
 | Fichier | PixInsight |
 |---|---|
-| `scripts/CommonCrop.js` (1.0.0) | 1.9.4 et plus (moteur JavaScript V8) |
+| `scripts/CommonCrop.js` (1.0.1) | 1.9.4 et plus (moteur JavaScript V8) |
 
 Entrées : des masters intégrés de la même cible, **tous intégrés sur la même brute de référence en
 composition *full***, pour qu'ils aient les mêmes dimensions et que les zones non couvertes soient

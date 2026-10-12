@@ -7,7 +7,7 @@
    crop edges. Creates new images, never modifies the masters. Interface in English or French.
 
 /*
- * CommonCrop.js  v1.0.0
+ * CommonCrop.js  v1.0.1
  * Copyright (c) 2026 Jacques Pouyaud. MIT License (see LICENSE).
  * Code écrit par Claude (Anthropic), sous la direction de Jacques Pouyaud.
  * https://github.com/jps-34/CommonCrop
@@ -29,11 +29,13 @@
  *   toutes les brutes de ce filtre) sert d'indicateur de qualité de
  *   l'acquisition, classé du pire au meilleur.
  *
+ * v1.0.1 : les rapports suivent la langue choisie (ils restaient dans la langue du
+ *   calcul après un changement de langue).
  * v1.0.0 : première version publiée. PixInsight 1.9.4 et plus (moteur V8).
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.0.0";
+var VERSION = "1.0.1";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";
@@ -138,7 +140,8 @@ function loadSettings()
 }
 
 // État conservé quand le dialogue se rouvre (changement de langue)
-var STATE = { slotIds: {}, margin: DEFAULT_MARGIN, geomHtml: "", checkHtml: "", summaryHtml: "" };
+// Les rapports sont gardés sous forme de données et régénérés dans la langue courante
+var STATE = { slotIds: {}, margin: DEFAULT_MARGIN, res: null, checks: null, extra: null, applied: null };
 
 // ============================================================================
 // Outils
@@ -527,7 +530,7 @@ function computeCrop( slots, margin, frameW, frameH )
                                   slots[0].name, W, H, slots[i].name, im.width, im.height ) );
    }
 
-   var frameSource = L( "saisie", "entered" );
+   var frameSource = { kind: "entered", src: "" };
    if ( frameW <= 0 || frameH <= 0 )
    {
       var fs = frameSizeFromHeader( slots[0].view.window );
@@ -535,10 +538,10 @@ function computeCrop( slots, margin, frameW, frameH )
       {
          frameW = fs.w;
          frameH = fs.h;
-         frameSource = L( "en-tête ", "header " ) + fs.source;
+         frameSource = { kind: "header", src: fs.source };
       }
       else
-         frameSource = L( "estimation (rectangle inscrit), approximative", "estimate (inscribed rectangle), approximate" );
+         frameSource = { kind: "estimate", src: "" };
    }
    var estimate = ( frameW <= 0 || frameH <= 0 );
 
@@ -560,9 +563,7 @@ function computeCrop( slots, margin, frameW, frameH )
       var sx = bb.width - fw, sy = bb.height - fh;
       if ( sx < 0 || sy < 0 )
       {
-         warnings.push( format( L( "%s : zone non nulle (%dx%d) plus petite que la brute (%dx%d), étalement forcé à 0.",
-                                   "%s: non-zero area (%dx%d) smaller than a frame (%dx%d), spread forced to 0." ),
-                                slots[c].name, bb.width, bb.height, fw, fh ) );
+         warnings.push( { name: slots[c].name, bw: bb.width, bh: bb.height, fw: fw, fh: fh } );
          sx = Math.max( sx, 0 );
          sy = Math.max( sy, 0 );
       }
@@ -751,7 +752,10 @@ function geometryReport( res )
    }
    h += "</table>";
    var lines = [];
-   lines.push( format( L( "Canevas %dx%d px. Taille de brute : %s.", "Canvas %dx%d px. Frame size: %s." ), res.W, res.H, res.frameSource ) );
+   var fsText = ( res.frameSource.kind == "header" ) ? L( "en-tête ", "header " ) + res.frameSource.src
+              : ( res.frameSource.kind == "estimate" ) ? L( "estimation (rectangle inscrit), approximative", "estimate (inscribed rectangle), approximate" )
+              : L( "saisie", "entered" );
+   lines.push( format( L( "Canevas %dx%d px. Taille de brute : %s.", "Canvas %dx%d px. Frame size: %s." ), res.W, res.H, fsText ) );
    lines.push( L( "Marges = pixels à retirer de chaque bord pour ne garder que la zone couverte par toutes les brutes du filtre. " +
                   "Perte de champ = part du champ d'une brute non couverte par toutes les brutes du filtre (classement du pire au meilleur).",
                   "Margins = pixels to remove from each edge to keep only the area covered by every sub-frame of the filter. " +
@@ -768,7 +772,13 @@ function geometryReport( res )
                           "Mean field loss per filter %s; final crop: %s of one frame, %s of the canvas." ),
                        pct( res.meanLoss ), pct( res.finalLossFrame ), pct( res.finalLossCanvas ) ) );
    for ( var w = 0; w < res.warnings.length; ++w )
-      lines.push( "<b>" + L( "Attention : ", "Warning: " ) + "</b>" + res.warnings[w] );
+   {
+      var wn = res.warnings[w];
+      lines.push( "<b>" + L( "Attention : ", "Warning: " ) + "</b>" +
+                  format( L( "%s : zone non nulle (%dx%d) plus petite que la brute (%dx%d), étalement forcé à 0.",
+                             "%s: non-zero area (%dx%d) smaller than a frame (%dx%d), spread forced to 0." ),
+                          wn.name, wn.bw, wn.bh, wn.fw, wn.fh ) );
+   }
    var summaryHtml = "<p>" + lines.join( "</p><p>" ) + "</p>";
    var text = lines.join( "\n" ).replace( /<[^>]+>/g, "" ) + "\n" + t;
    return { html: h, summaryHtml: summaryHtml, text: text };
@@ -1039,11 +1049,9 @@ constructor()
    this.geomLabel.useRichText = true;
    this.geomLabel.wordWrapping = true;
    this.geomLabel.toolTip = TIPS.geometry;
-   this.geomLabel.text = STATE.geomHtml.length > 0 ? STATE.geomHtml : "<p>" + L( "Charger les masters puis cliquer sur Calculer.", "Load the masters, then click Compute." ) + "</p>";
    this.summaryLabel = new Label( this );
    this.summaryLabel.useRichText = true;
    this.summaryLabel.wordWrapping = true;
-   this.summaryLabel.text = STATE.summaryHtml;
    this.geomGroup.sizer.add( this.geomLabel );
    this.geomGroup.sizer.add( this.summaryLabel );
 
@@ -1056,7 +1064,6 @@ constructor()
    this.checkLabel.useRichText = true;
    this.checkLabel.wordWrapping = true;
    this.checkLabel.toolTip = TIPS.check;
-   this.checkLabel.text = STATE.checkHtml;
    this.checkGroup.sizer.add( this.checkLabel );
 
    // --- boutons --------------------------------------------------------------
@@ -1092,6 +1099,7 @@ constructor()
    this.sizer.add( buttons );
 
    this.restoreState();
+   this.renderReports();
    this.adjustToContents();
    this.setMinWidth( this.logicalPixelsToPhysical( 900 ) );
 }
@@ -1185,6 +1193,33 @@ filledSlots()
       if ( this.slots[i].view != null && !this.slots[i].view.isNull )
          f.push( { name: this.slots[i].name, view: this.slots[i].view } );
    return f;
+}
+
+// Réaffiche les rapports à partir des données, dans la langue courante
+renderReports()
+{
+   if ( STATE.res == null )
+   {
+      this.geomLabel.text = "<p>" + L( "Charger les masters puis cliquer sur Calculer.", "Load the masters, then click Compute." ) + "</p>";
+      this.summaryLabel.text = "";
+      this.checkLabel.text = "";
+      return;
+   }
+   var g = geometryReport( STATE.res );
+   var tail = "";
+   if ( STATE.extra != null )
+   {
+      var x = STATE.extra;
+      if ( x.nPrev >= 0 )
+         tail += format( L( "Preview « %s » créé ou mis à jour sur %d master(s). ", "Preview '%s' created or updated on %d master(s). " ), PREVIEW_ID, x.nPrev );
+      tail += format( L( "Géométrie %.1f s, contrôle %.1f s.", "Geometry %.1f s, check %.1f s." ), x.tGeom, x.tCheck );
+   }
+   if ( STATE.applied != null )
+      tail += ( tail.length ? " " : "" ) + "<b>" + format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ),
+                                                          STATE.applied.ids.join( ", " ), STATE.applied.t ) + "</b>";
+   this.geomLabel.text = g.html;
+   this.summaryLabel.text = g.summaryHtml + ( tail.length ? "<p>" + tail + "</p>" : "" );
+   this.checkLabel.text = ( STATE.checks != null ) ? checkReport( STATE.checks, TP.threshold ).html : "";
 }
 
 storeState()
@@ -1321,12 +1356,10 @@ doCompute()
       for ( var i = 0; i < slots.length; ++i )
          checks.push( { name: slots[i].name, result: edgeCheck( slots[i].view.image, res.crop ) } );
       var t2 = Date.now();
-      var g = geometryReport( res );
-      var c = checkReport( checks, TP.threshold );
-      var extra = "";
+      var nPrev = -1;
       if ( TP.preview )
       {
-         var nPrev = 0;
+         nPrev = 0;
          for ( var p = 0; p < slots.length; ++p )
          {
             try
@@ -1339,16 +1372,15 @@ doCompute()
                console.warningln( L( "Preview impossible sur ", "Cannot create the preview on " ) + slots[p].view.id + " : " + errText( e ) );
             }
          }
-         extra = format( L( "Preview « %s » créé ou mis à jour sur %d master(s). ", "Preview '%s' created or updated on %d master(s). " ), PREVIEW_ID, nPrev );
       }
-      extra += format( L( "Géométrie %.1f s, contrôle %.1f s.", "Geometry %.1f s, check %.1f s." ), ( t1 - t0 ) / 1000, ( t2 - t1 ) / 1000 );
-      STATE.geomHtml = g.html;
-      STATE.summaryHtml = g.summaryHtml + "<p>" + extra + "</p>";
-      STATE.checkHtml = c.html;
-      this.geomLabel.text = STATE.geomHtml;
-      this.summaryLabel.text = STATE.summaryHtml;
-      this.checkLabel.text = STATE.checkHtml;
-      log( g.text + "\n" + c.text + "\n" + extra );
+      STATE.res = res;
+      STATE.checks = checks;
+      STATE.extra = { nPrev: nPrev, tGeom: ( t1 - t0 ) / 1000, tCheck: ( t2 - t1 ) / 1000 };
+      STATE.applied = null;
+      this.renderReports();
+      var g = geometryReport( res );
+      var c = checkReport( checks, TP.threshold );
+      log( g.text + "\n" + c.text );
       saveSettings();
       this.adjustToContents();
    }
@@ -1395,11 +1427,12 @@ doApply()
       }
       this.refreshLists();
       var g = geometryReport( res );
-      var done = format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ), created.join( ", " ), ( Date.now() - t0 ) / 1000 );
-      STATE.geomHtml = g.html;
-      STATE.summaryHtml = g.summaryHtml + "<p><b>" + done + "</b></p>";
-      this.geomLabel.text = STATE.geomHtml;
-      this.summaryLabel.text = STATE.summaryHtml;
+      var tApply = ( Date.now() - t0 ) / 1000;
+      var done = format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ), created.join( ", " ), tApply );
+      STATE.res = res;
+      STATE.extra = null;
+      STATE.applied = { ids: created, t: tApply };
+      this.renderReports();
       log( g.text + "\n" + done );
       saveSettings();
       this.adjustToContents();

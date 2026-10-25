@@ -7,7 +7,7 @@
    crop edges. Creates new images, never modifies the masters. Interface in English or French.
 
 /*
- * CommonCrop.js  v1.0.2
+ * CommonCrop.js  v1.1.0
  * Copyright (c) 2026 Jacques Pouyaud. MIT License (see LICENSE).
  * Code written by Claude (Anthropic), under the direction of Jacques Pouyaud.
  * https://github.com/jps-34/CommonCrop
@@ -29,6 +29,8 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.0: optional in-place crop of the loaded masters (no new images), undoable
+ *   from the PixInsight history; refused on masters that look already cropped.
  * v1.0.2: code comments and maintenance notes in English. No functional change.
  * v1.0.1: the reports follow the selected language (they stayed in the
  *   language of the computation after a language switch).
@@ -36,7 +38,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.0.2";
+var VERSION = "1.1.0";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";
@@ -117,7 +119,7 @@ function L( fr, en )
 // Saved settings (not the margin: the suggested value comes back at each launch)
 // ============================================================================
 
-var TP = { frameW: 0, frameH: 0, threshold: DEFAULT_THRESHOLD, preview: true, rename: true };
+var TP = { frameW: 0, frameH: 0, threshold: DEFAULT_THRESHOLD, preview: true, rename: true, inPlace: false };
 
 function saveSettings()
 {
@@ -688,6 +690,39 @@ function createCroppedWindow( srcView, crop, id )
    return win;
 }
 
+// Crops a master in place with the Crop process (one undoable history step).
+// The CommonCrop preview is removed first: its rectangle would no longer fit.
+function cropInPlace( view, crop )
+{
+   var W = view.image.width, H = view.image.height;
+   removeCropPreview( view.window );
+   var P = new Crop;
+   P.leftMargin   = -crop.x0;
+   P.topMargin    = -crop.y0;
+   P.rightMargin  = -( W - crop.x1 );
+   P.bottomMargin = -( H - crop.y1 );
+   var absPx = 1;   // CropMode::AbsolutePixels
+   try { if ( Crop.AbsolutePixels !== undefined ) absPx = Crop.AbsolutePixels; } catch ( e ) {}
+   P.mode = absPx;
+   P.noGUIMessages = true;
+   if ( !P.executeOn( view ) )
+      throw new Error( format( L( "le process Crop a échoué sur %s", "the Crop process failed on %s" ), view.id ) );
+   if ( view.image.width != crop.width || view.image.height != crop.height )
+      throw new Error( format( L( "%s : taille obtenue %dx%d au lieu de %dx%d", "%s: got %dx%d instead of %dx%d" ),
+                               view.id, view.image.width, view.image.height, crop.width, crop.height ) );
+   try
+   {
+      var kw = view.window.keywords;
+      kw.push( new FITSKeyword( "HISTORY", "", format( "%s %s: in-place crop x0=%d y0=%d w=%d h=%d",
+                                                     TITLE, VERSION, crop.x0, crop.y0, crop.width, crop.height ) ) );
+      view.window.keywords = kw;
+   }
+   catch ( e2 )
+   {
+      console.warningln( L( "Mot-clé HISTORY non ajouté : ", "HISTORY keyword not added: " ) + errText( e2 ) );
+   }
+}
+
 // ============================================================================
 // Check previews
 // ============================================================================
@@ -846,7 +881,8 @@ function buildTips()
    rename: "<p>À Appliquer, renomme chaque master d'entrée <b>&lt;filtre&gt;" + IN_SUFFIX + "</b> (L_master, R_master...). Ses pixels ne sont pas modifiés.</p>",
    removePreviews: "<p>Supprime les previews " + PREVIEW_ID + " des masters chargés.</p>",
    compute: "<p>Calcule le recadrage commun, les pertes de champ et le contrôle de bruit. Ne modifie rien.</p>",
-   apply: "<p>Crée les images recadrées <b>&lt;filtre&gt;" + OUT_SUFFIX + "</b> (L_crop, R_crop...) avec une STF automatique et un zoom réduit. Les masters ne sont pas modifiés.</p>",
+   apply: "<p>Crée les images recadrées <b>&lt;filtre&gt;" + OUT_SUFFIX + "</b> (L_crop, R_crop...) avec une STF automatique et un zoom réduit. Les masters ne sont pas modifiés.</p><p>Avec <i>Recadrer sur place</i> : recadre directement les masters chargés, sans créer d'image.</p>",
+   inPlace: "<p><b>Recadre directement les masters chargés</b>, sans créer d'images &lt;filtre&gt;" + OUT_SUFFIX + ". Chaque recadrage est une étape de l'historique PixInsight : Ctrl+Z (Annuler) sur la vue revient en arrière. Les fichiers sur disque ne changent que si vous les enregistrez.</p><p>Décoché (par défaut) : les masters restent intacts et le résultat est une nouvelle image par filtre, pratique pour comparer avec les previews.</p>",
    close: "<p>Ferme le dialogue.</p>",
    geometry: "<p>Pour chaque filtre : taille de brute, étalement des brutes (excédent de la zone non nulle sur une brute), marges de la zone couverte par toutes les brutes, et perte de champ. Classement du pire au meilleur.</p>",
    check: "<p>Ratio de bruit au bord du recadrage, par côté. Autour de 1,0 : le bord est dans la zone pleinement intégrée. Lire la médiane ; le maximum entre parenthèses réagit aux étoiles et aux nébulosités.</p>" };
@@ -866,7 +902,8 @@ function buildTips()
    rename: "<p>On Apply, renames each input master <b>&lt;filter&gt;" + IN_SUFFIX + "</b> (L_master, R_master...). Its pixels are not modified.</p>",
    removePreviews: "<p>Removes the " + PREVIEW_ID + " previews from the loaded masters.</p>",
    compute: "<p>Computes the common crop, the field losses and the noise check. Modifies nothing.</p>",
-   apply: "<p>Creates the cropped images <b>&lt;filter&gt;" + OUT_SUFFIX + "</b> (L_crop, R_crop...) with an automatic STF and a reduced zoom. The masters are not modified.</p>",
+   apply: "<p>Creates the cropped images <b>&lt;filter&gt;" + OUT_SUFFIX + "</b> (L_crop, R_crop...) with an automatic STF and a reduced zoom. The masters are not modified.</p><p>With <i>Crop in place</i>: crops the loaded masters directly, without creating images.</p>",
+   inPlace: "<p><b>Crops the loaded masters directly</b>, without creating &lt;filter&gt;" + OUT_SUFFIX + " images. Each crop is one step of the PixInsight history: Ctrl+Z (Undo) on the view reverts it. Files on disk only change if you save them.</p><p>Unchecked (default): the masters stay untouched and the result is one new image per filter, handy to compare with the previews.</p>",
    close: "<p>Closes the dialog.</p>",
    geometry: "<p>Per filter: frame size, spread of the sub-frames (excess of the non-zero area over one frame), margins of the area covered by every sub-frame, and field loss. Ranked worst first.</p>",
    check: "<p>Noise ratio at the crop edge, per side. Around 1.0: the edge is inside the fully integrated area. Read the median; the maximum in brackets reacts to stars and nebulosity.</p>" };
@@ -1022,6 +1059,12 @@ constructor()
    this.renameCheck.checked = TP.rename;
    this.renameCheck.toolTip = TIPS.rename;
    this.renameCheck.onCheck = function( c ) { TP.rename = c; };
+   this.inPlaceCheck = new CheckBox( this );
+   this.inPlaceCheck.text = L( "Recadrer sur place (sans nouvelles images)", "Crop in place (no new images)" );
+   this.inPlaceCheck.checked = TP.inPlace;
+   this.inPlaceCheck.toolTip = TIPS.inPlace;
+   this.inPlaceCheck.onCheck = function( c ) { TP.inPlace = c; self.renameCheck.enabled = !c; };
+   this.renameCheck.enabled = !TP.inPlace;
    this.removePreviewsButton = new PushButton( this );
    this.removePreviewsButton.text = L( "Supprimer les previews", "Remove previews" );
    this.removePreviewsButton.toolTip = TIPS.removePreviews;
@@ -1035,6 +1078,7 @@ constructor()
    row2.spacing = 12;
    row2.add( this.previewCheck );
    row2.add( this.renameCheck );
+   row2.add( this.inPlaceCheck );
    row2.add( this.removePreviewsButton );
    row2.addStretch();
    this.paramsGroup.sizer.add( row1 );
@@ -1216,8 +1260,12 @@ renderReports()
       tail += format( L( "Géométrie %.1f s, contrôle %.1f s.", "Geometry %.1f s, check %.1f s." ), x.tGeom, x.tCheck );
    }
    if ( STATE.applied != null )
-      tail += ( tail.length ? " " : "" ) + "<b>" + format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ),
-                                                          STATE.applied.ids.join( ", " ), STATE.applied.t ) + "</b>";
+      tail += ( tail.length ? " " : "" ) + "<b>" +
+              ( STATE.applied.inPlace
+                 ? format( L( "Recadrés sur place : %s (%.1f s). Ctrl+Z sur une vue pour annuler.", "Cropped in place: %s (%.1f s). Ctrl+Z on a view to undo." ),
+                           STATE.applied.ids.join( ", " ), STATE.applied.t )
+                 : format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ),
+                           STATE.applied.ids.join( ", " ), STATE.applied.t ) ) + "</b>";
    this.geomLabel.text = g.html;
    this.summaryLabel.text = g.summaryHtml + ( tail.length ? "<p>" + tail + "</p>" : "" );
    this.checkLabel.text = ( STATE.checks != null ) ? checkReport( STATE.checks, TP.threshold ).html : "";
@@ -1403,7 +1451,24 @@ doApply()
       log( format( L( "  recadrage x0=%d y0=%d %dx%d", "  crop x0=%d y0=%d %dx%d" ), res.crop.x0, res.crop.y0, res.crop.width, res.crop.height ) );
       var t0 = Date.now();
       var created = [];
-      for ( var i = 0; i < slots.length; ++i )
+      if ( TP.inPlace )
+      {
+         // A master with no zero border at all has most likely been cropped already:
+         // cropping it again would only eat into the image by the margin.
+         var already = res.perChannel.filter( function( c )
+            { return c.bbox.left == 0 && c.bbox.top == 0 && c.bbox.right == 0 && c.bbox.bottom == 0; } );
+         if ( already.length > 0 )
+            throw new Error( format( L( "%s : aucun bord nul, master déjà recadré ? Recadrage sur place annulé (Ctrl+Z pour revenir à l'original).",
+                                        "%s: no zero border, master already cropped? In-place crop cancelled (Ctrl+Z to go back to the original)." ),
+                                     already.map( function( c ) { return c.name; } ).join( ", " ) ) );
+         for ( var k = 0; k < slots.length; ++k )
+         {
+            cropInPlace( slots[k].view, res.crop );
+            created.push( slots[k].view.id );
+            log( format( "  %s : %dx%d (%s)", slots[k].view.id, res.crop.width, res.crop.height, L( "sur place", "in place" ) ) );
+         }
+      }
+      for ( var i = 0; i < slots.length && !TP.inPlace; ++i )
       {
          var s = slots[i];
          if ( TP.rename && s.view.id != s.name + IN_SUFFIX )
@@ -1429,10 +1494,11 @@ doApply()
       this.refreshLists();
       var g = geometryReport( res );
       var tApply = ( Date.now() - t0 ) / 1000;
-      var done = format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ), created.join( ", " ), tApply );
+      var done = TP.inPlace ? format( L( "Recadrés sur place : %s (%.1f s).", "Cropped in place: %s (%.1f s)." ), created.join( ", " ), tApply )
+                            : format( L( "Images créées : %s (%.1f s).", "Images created: %s (%.1f s)." ), created.join( ", " ), tApply );
       STATE.res = res;
       STATE.extra = null;
-      STATE.applied = { ids: created, t: tApply };
+      STATE.applied = { ids: created, t: tApply, inPlace: TP.inPlace };
       this.renderReports();
       log( g.text + "\n" + done );
       saveSettings();

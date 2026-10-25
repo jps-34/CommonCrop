@@ -25,7 +25,8 @@ pleinement intégrés.
 * **Perte de champ par filtre** : part du champ perdue à cause de l'étalement, du pire au
   meilleur. Un indicateur rapide de votre acquisition, filtre par filtre.
 * **Appliquer** : crée `<filtre>_crop` avec une STF automatique ; les entrées sont renommées
-  `<filtre>_master`. Les masters ne sont jamais modifiés.
+  `<filtre>_master`. Les masters ne sont jamais modifiés. Option **Recadrer sur place** : recadre
+  directement les masters (une étape d'historique annulable par master).
 
 ## Prérequis
 

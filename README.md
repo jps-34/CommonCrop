@@ -24,7 +24,8 @@ the masters alone and gives you `L_crop`, `R_crop`, ... all the same size and fu
 * **Field loss per filter**: share of the field lost to the spread, ranked worst first. A quick
   score of your acquisition, filter by filter.
 * **Apply**: creates `<filter>_crop` with an automatic STF; inputs are renamed `<filter>_master`.
-  Masters are never modified.
+  Masters are never modified. Option **Crop in place**: crops the masters themselves instead
+  (one undoable history step per master).
 
 ## Requirements
 

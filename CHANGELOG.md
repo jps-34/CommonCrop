@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.0 (2026-10-25)
+* New option **Crop in place**: Apply crops the loaded masters directly instead of creating
+  `<filter>_crop` images. Each crop is one PixInsight history step (Ctrl+Z reverts it); the
+  `CommonCrop` preview is removed first; a HISTORY keyword records the crop. Refused when a master
+  has no zero border at all (most likely already cropped). Off by default.
+* Option suggested by Philippe Bernhard ([astro-photographie.fr](https://astro-photographie.fr/)).
+
 ## 1.0.2 (2026-10-12)
 * Code comments and maintenance notes (`MAINTENANCE.md`) in English; the interface and the
   tooltips stay in English and French. No functional change.

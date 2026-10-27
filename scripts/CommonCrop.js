@@ -1,13 +1,13 @@
 #engine v8
 
-#feature-id    CommonCrop : Utilities > CommonCrop
+#feature-id    CommonCrop : JPS > CommonCrop
 #feature-info  Crops a set of integrated masters (L, R, G, B, SII, Ha, OIII and two auxiliary \
    channels) to the one rectangle covered by every sub-frame of every channel, from the \
    masters alone. Reports a field-loss score per filter and checks the noise at the \
    crop edges. Creates new images, never modifies the masters. Interface in English or French.
 
 /*
- * CommonCrop.js  v1.1.1
+ * CommonCrop.js  v1.1.2
  * Copyright (c) 2026 Jacques Pouyaud.
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Free software under the GNU General Public License, version 3 or (at your
@@ -32,6 +32,7 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.2: menu entry moved to Script > JPS (was Script > Utilities).
  * v1.1.0: optional in-place crop of the loaded masters (no new images), undoable
  *   from the PixInsight history; refused on masters that look already cropped.
  * v1.0.2: code comments and maintenance notes in English. No functional change.
@@ -41,7 +42,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.1";
+var VERSION = "1.1.2";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";

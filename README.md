@@ -40,7 +40,7 @@ the masters alone and gives you `L_crop`, `R_crop`, ... all the same size and fu
 1. *Resources > Updates > Manage Repositories*, add `https://jps-34.github.io/CommonCrop/`
 2. *Check for Updates*, restart PixInsight (enable *Allow unsigned update repositories* until the
    repository is signed).
-3. *Script > Utilities > CommonCrop*.
+3. *Script > JPS > CommonCrop* (*Script > Utilities* up to 1.1.1).
 
 Or download `scripts/CommonCrop.js` and run it with *Script > Execute Script File*.
 

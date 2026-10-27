@@ -41,7 +41,7 @@ pleinement intégrés.
 1. *Resources > Updates > Manage Repositories*, ajouter `https://jps-34.github.io/CommonCrop/`
 2. *Check for Updates*, redémarrer PixInsight (activer *Allow unsigned update repositories* tant
    que le dépôt n'est pas signé).
-3. *Script > Utilities > CommonCrop*.
+3. *Script > JPS > CommonCrop* (*Script > Utilities* jusqu'à la 1.1.1).
 
 Ou télécharger `scripts/CommonCrop.js` et le lancer par *Script > Execute Script File*.
 

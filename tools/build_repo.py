@@ -35,7 +35,7 @@ PACKAGES = [
                 "to the one rectangle covered by every sub-frame of every channel, from the masters alone. "
                 "Reports a field-loss score per filter and checks the noise at the crop edges. Creates new "
                 "images, never modifies the masters. English or French interface. "
-                "Installs under Script > Utilities > CommonCrop.",
+                "Installs under Script > JPS > CommonCrop.",
     },
 ]
 NOTICE = "Copyright (c) 2026 Jacques Pouyaud. GNU GPL v3 or later. Source: https://github.com/{user}/CommonCrop"

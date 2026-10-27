@@ -7,8 +7,11 @@
    crop edges. Creates new images, never modifies the masters. Interface in English or French.
 
 /*
- * CommonCrop.js  v1.1.0
- * Copyright (c) 2026 Jacques Pouyaud. MIT License (see LICENSE).
+ * CommonCrop.js  v1.1.1
+ * Copyright (c) 2026 Jacques Pouyaud.
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * Free software under the GNU General Public License, version 3 or (at your
+ * option) any later version, WITHOUT ANY WARRANTY; see LICENSE.
  * Code written by Claude (Anthropic), under the direction of Jacques Pouyaud.
  * https://github.com/jps-34/CommonCrop
  *
@@ -38,7 +41,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.0";
+var VERSION = "1.1.1";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";

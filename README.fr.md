@@ -59,7 +59,17 @@ Interface en français ou en anglais (menu *Langue / Language*). Survoler un ré
 
 ## Licence
 
-Copyright (c) 2026 Jacques Pouyaud. [Licence MIT](LICENSE).
+Copyright (c) 2026 Jacques Pouyaud. Publié sous
+[licence publique générale GNU, version 3 ou ultérieure](LICENSE) (GPL-3.0-or-later) : il peut être
+utilisé, étudié, partagé et modifié ; toute œuvre distribuée qui intègre ce code doit être publiée
+sous la même licence, avec son code source. Les versions jusqu'à 1.1.0 ont été publiées sous licence
+MIT, qui reste valable pour les copies de ces versions.
+
+**Demande de crédit.** En cas de reprise de la méthode ou du code de CommonCrop, dans un script, une
+application ou un tutoriel, merci de le citer par son nom avec un lien vers ce dépôt. C'est une
+demande, pas une condition de la licence ; quand le code lui-même est repris, la GPL impose déjà de
+conserver la mention de copyright.
+
 Rapports de bogues et suggestions bienvenus dans les issues GitHub.
 
 *Code écrit par Claude (Anthropic), sous la direction de Jacques Pouyaud.*

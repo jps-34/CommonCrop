@@ -38,7 +38,7 @@ PACKAGES = [
                 "Installs under Script > Utilities > CommonCrop.",
     },
 ]
-NOTICE = "Copyright (c) 2026 Jacques Pouyaud. MIT License. Source: https://github.com/{user}/CommonCrop"
+NOTICE = "Copyright (c) 2026 Jacques Pouyaud. GNU GPL v3 or later. Source: https://github.com/{user}/CommonCrop"
 
 
 def script_version(path):

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1 (2026-10-27)
+* Licence changed from MIT to the GNU General Public License, version 3 or later
+  (GPL-3.0-or-later). Versions up to 1.1.0 remain available under the MIT License. No change to
+  the script's behaviour.
+* README: credit request for reuse of the method or the code.
+
 ## 1.1.0 (2026-10-25)
 * New option **Crop in place**: Apply crops the loaded masters directly instead of creating
   `<filter>_crop` images. Each crop is one PixInsight history step (Ctrl+Z reverts it); the

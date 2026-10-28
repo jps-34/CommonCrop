@@ -5,8 +5,8 @@
       <p>Add https://jps-34.github.io/CommonCrop/ under Resources &gt; Updates &gt; Manage Repositories.</p>
    </description>
    <platform os="all" arch="noarch" version="1.9.4:1.9.99">
-      <package fileName="CommonCrop-1.1.2-PI194.zip" sha1="f822feb3f4e890a5df08f842c1a106aff3f118b8" type="script" releaseDate="20261027" serverURL="https://jps-34.github.io/CommonCrop/">
-         <title>CommonCrop 1.1.2 (PixInsight 1.9.4 and later)</title>
+      <package fileName="CommonCrop-1.1.3-PI194.zip" sha1="b2aeac20eaa433a4307bf39212b93ffc132c67f7" type="script" releaseDate="20261028" serverURL="https://jps-34.github.io/CommonCrop/">
+         <title>CommonCrop 1.1.3 (PixInsight 1.9.4 and later)</title>
          <description>
             <p>Crops a set of integrated masters (L, R, G, B, SII, Ha, OIII and two auxiliary channels) to the one rectangle covered by every sub-frame of every channel, from the masters alone. Reports a field-loss score per filter and checks the noise at the crop edges. Creates new images, never modifies the masters. English or French interface. Installs under Script &gt; JPS &gt; CommonCrop.</p>
             <p>Copyright (c) 2026 Jacques Pouyaud. GNU GPL v3 or later. Source: https://github.com/jps-34/CommonCrop</p>

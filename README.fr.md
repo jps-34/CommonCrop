@@ -35,6 +35,10 @@ pleinement intégrés.
   *full* (mêmes dimensions, zéro là où rien n'est couvert).
 * La taille d'une brute : lue dans l'en-tête FITS pour les QHY600, ASI6200, ASI2600 et QHY268,
   sinon à saisir une fois dans les réglages.
+* **Pas pour les masters WBPP.** WBPP recale chaque brute sur la brute de référence : ses masters
+  ont la taille d'une brute et pas de bord nul, leur couverture partielle ne se voit donc pas dans
+  le master. CommonCrop le signale dans son rapport ; pour ces masters, utilisez l'option
+  *Autocrop* de WBPP.
 
 ## Installation
 

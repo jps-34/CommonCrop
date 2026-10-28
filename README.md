@@ -34,6 +34,9 @@ the masters alone and gives you `L_crop`, `R_crop`, ... all the same size and fu
   (same dimensions, zero where nothing was covered).
 * The size of one sub-frame: read from the FITS header for QHY600, ASI6200, ASI2600 and QHY268,
   otherwise enter it once in the settings.
+* **Not for WBPP masters.** WBPP registers every sub-frame on the reference frame, so its masters
+  have the size of one frame and no zero border: their partial coverage cannot be seen from the
+  master. CommonCrop says so in its report; use the WBPP *Autocrop* option for those masters.
 
 ## Installation
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.3 (2026-10-28)
+* Warning for masters registered on a reference frame (WBPP, ImageIntegration): they have the
+  size of one frame and no zero border, so their partial coverage cannot be seen and the crop does
+  not remove it. The report says so and points to the WBPP *Autocrop* option. Before, such masters
+  got a crop of the safety margin only, with no explanation. Crop results are unchanged.
+* *Sort open views* ignores the `rejection_low` / `rejection_high` windows that open along with a
+  WBPP master.
+* READMEs: CommonCrop is meant for masters in *full* composition (APP...), not for WBPP masters.
+
 ## 1.1.2 (2026-10-27)
 * Menu: the script moves from *Script > Utilities* to *Script > JPS*, the folder that groups
   the PixInsight scripts of Jacques Pouyaud. No change to the behaviour.

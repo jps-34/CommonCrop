@@ -32,6 +32,10 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.3: warning for masters registered on a reference frame (WBPP,
+ *   ImageIntegration): their canvas is one frame, so the zero border cannot
+ *   show the coverage; the WBPP Autocrop is advised. The rejection map windows
+ *   opened with such a master are no longer sorted into slots. Results unchanged.
  * v1.1.2: menu entry moved to Script > JPS (was Script > Utilities).
  * v1.1.0: optional in-place crop of the loaded masters (no new images), undoable
  *   from the PixInsight history; refused on masters that look already cropped.
@@ -42,7 +46,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.2";
+var VERSION = "1.1.3";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";
@@ -568,9 +572,17 @@ function computeCrop( slots, margin, frameW, frameH )
          fh = est.height;
       }
       var sx = bb.width - fw, sy = bb.height - fh;
-      if ( sx < 0 || sy < 0 )
+      if ( sx <= 0 && sy <= 0 )
       {
-         warnings.push( { name: slots[c].name, bw: bb.width, bh: bb.height, fw: fw, fh: fh } );
+         // Non-zero area no larger than one frame: master registered on a reference
+         // frame (WBPP, ImageIntegration), whose coverage the zero border cannot show.
+         warnings.push( { kind: "reference", name: slots[c].name } );
+         sx = 0;
+         sy = 0;
+      }
+      else if ( sx < 0 || sy < 0 )
+      {
+         warnings.push( { kind: "small", name: slots[c].name, bw: bb.width, bh: bb.height, fw: fw, fh: fh } );
          sx = Math.max( sx, 0 );
          sy = Math.max( sy, 0 );
       }
@@ -811,14 +823,31 @@ function geometryReport( res )
                format( L( "Perte de champ moyenne par filtre %s ; recadrage final : %s d'une brute, %s du canevas.",
                           "Mean field loss per filter %s; final crop: %s of one frame, %s of the canvas." ),
                        pct( res.meanLoss ), pct( res.finalLossFrame ), pct( res.finalLossCanvas ) ) );
+   var refNames = [];
    for ( var w = 0; w < res.warnings.length; ++w )
    {
       var wn = res.warnings[w];
+      if ( wn.kind == "reference" )
+      {
+         refNames.push( wn.name );
+         continue;
+      }
       lines.push( "<b>" + L( "Attention : ", "Warning: " ) + "</b>" +
                   format( L( "%s : zone non nulle (%dx%d) plus petite que la brute (%dx%d), étalement forcé à 0.",
                              "%s: non-zero area (%dx%d) smaller than a frame (%dx%d), spread forced to 0." ),
                           wn.name, wn.bw, wn.bh, wn.fw, wn.fh ) );
    }
+   if ( refNames.length > 0 )
+      lines.push( "<b>" + L( "Attention : ", "Warning: " ) + "</b>" +
+                  format( L( "%s : zone non nulle pas plus grande qu'une brute, aucun étalement visible. " +
+                             "Un master recalé sur une brute de référence (WBPP, ImageIntegration) a la taille de cette brute : " +
+                             "sa couverture partielle ne se voit pas et ce recadrage ne la retire pas. " +
+                             "Pour ces masters, utiliser l'Autocrop de WBPP ; CommonCrop est fait pour les masters en composition « full » (APP...).",
+                             "%s: non-zero area no larger than one frame, no spread visible. " +
+                             "A master registered on a reference frame (WBPP, ImageIntegration) has the size of that frame: " +
+                             "its partial coverage cannot be seen and this crop does not remove it. " +
+                             "For such masters, use the WBPP Autocrop; CommonCrop is meant for masters in 'full' composition (APP...)." ),
+                          refNames.join( ", " ) ) );
    var summaryHtml = "<p>" + lines.join( "</p><p>" ) + "</p>";
    var text = lines.join( "\n" ).replace( /<[^>]+>/g, "" ) + "\n" + t;
    return { html: h, summaryHtml: summaryHtml, text: text };
@@ -1368,6 +1397,9 @@ autoAssignOpenViews()
       var w = wins[i];
       if ( w == null || w.isNull )
          continue;
+      // maps opened along with a WBPP / ImageIntegration master (MasterLight_L_rejection_low...)
+      if ( /rejection_(low|high)|slope_?map/i.test( w.mainView.id ) )
+         continue;
       var already = false;
       for ( var k = 0; k < this.slots.length; ++k )
          if ( this.slots[k].view != null && this.slots[k].view.id == w.mainView.id )
@@ -1535,4 +1567,6 @@ function main()
    }
 }
 
-main();
+// COMMONCROP_NO_MAIN: defined by a test script that includes this file
+if ( typeof COMMONCROP_NO_MAIN === "undefined" )
+   main();

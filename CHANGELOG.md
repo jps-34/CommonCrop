@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+* Deprecated `fileName` and `fileNames` replaced by `filePath` and `filePaths`, with the older names
+  kept as a fallback. No change to the behaviour.
+
 ## 1.1.3 (2026-10-28)
 * Warning for masters registered on a reference frame (WBPP, ImageIntegration): they have the
   size of one frame and no zero border, so their partial coverage cannot be seen and the crop does

@@ -1210,7 +1210,7 @@ makeSlotRow( name, labelWidth )
       ofd.multipleSelections = false;
       ofd.loadImageFilters();
       if ( ofd.execute() )
-         self.openFileIntoSlot( slot, ofd.fileName );
+         self.openFileIntoSlot( slot, ofd.filePath || ofd.fileName );
    };
    var clear = new ToolButton( this );
    clear.icon = this.scaledResource( ":/icons/clear.png" );
@@ -1385,7 +1385,7 @@ openFiles()
    ofd.multipleSelections = true;
    ofd.loadImageFilters();
    if ( ofd.execute() )
-      this.openAndAssign( ofd.fileNames );
+      this.openAndAssign( ofd.filePaths || ofd.fileNames );
 }
 
 autoAssignOpenViews()

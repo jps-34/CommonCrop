@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+* Return no longer runs a button of the dialog: PixInsight 1.9.6 activates the first button of a dialog
+  when Return is pressed in an edit box, which could start a run or reset the settings.
+
 ## 1.1.4 (2026-10-30)
 * Deprecated `fileName` and `fileNames` replaced by `filePath` and `filePaths`, with the older names
   kept as a fallback. No change to the behaviour.

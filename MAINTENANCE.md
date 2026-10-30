@@ -3,6 +3,9 @@
 Notes for the author. Nothing here is needed to use the script. Same organisation as
 Badassium238.
 
+Python is used only by the maintenance tools of `tools/`, on the author's machine: it is never
+packaged, installed or run by the script.
+
 ## 1. Initial publication (done in 1.0.0, kept for reference)
 
 1. The user name `jps-34` is in place everywhere (READMEs, repository page, script header) and the

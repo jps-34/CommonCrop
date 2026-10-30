@@ -32,6 +32,7 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.4: deprecated names replaced. No change to the behaviour.
  * v1.1.3: warning for masters registered on a reference frame (WBPP,
  *   ImageIntegration): their canvas is one frame, so the zero border cannot
  *   show the coverage; the WBPP Autocrop is advised. The rejection map windows
@@ -46,7 +47,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.3";
+var VERSION = "1.1.4";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";

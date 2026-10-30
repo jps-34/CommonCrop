@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.4 (2026-10-30)
 * Deprecated `fileName` and `fileNames` replaced by `filePath` and `filePaths`, with the older names
   kept as a fallback. No change to the behaviour.
 

@@ -34,7 +34,7 @@ PACKAGES = [
         "desc": "Crops a set of integrated masters (L, R, G, B, SII, Ha, OIII and two auxiliary channels) "
                 "to the one rectangle covered by every sub-frame of every channel, from the masters alone. "
                 "Reports a field-loss score per filter and checks the noise at the crop edges. Creates new "
-                "images, never modifies the masters. English or French interface. "
+                "images by default; an option crops the masters in place. English or French interface. "
                 "Installs under Script > JPS > CommonCrop.",
     },
 ]

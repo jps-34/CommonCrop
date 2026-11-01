@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.6 (unreleased)
+* Description corrected in the script, the update repository and the READMEs: the masters are not
+  modified by default, and the *Crop in place* option crops them directly. No change to the behaviour.
+
 ## 1.1.5 (2026-10-30)
 * Return no longer runs a button of the dialog: PixInsight 1.9.6 activates the first button of a dialog
   when Return is pressed in an edit box, which could start a run or reset the settings.

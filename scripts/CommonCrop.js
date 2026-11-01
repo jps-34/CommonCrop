@@ -4,10 +4,11 @@
 #feature-info  Crops a set of integrated masters (L, R, G, B, SII, Ha, OIII and two auxiliary \
    channels) to the one rectangle covered by every sub-frame of every channel, from the \
    masters alone. Reports a field-loss score per filter and checks the noise at the \
-   crop edges. Creates new images, never modifies the masters. Interface in English or French.
+   crop edges. Creates new images by default; an option crops the masters in place. \
+   Interface in English or French.
 
 /*
- * CommonCrop.js  v1.1.2
+ * CommonCrop.js  v1.1.6
  * Copyright (c) 2026 Jacques Pouyaud.
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Free software under the GNU General Public License, version 3 or (at your
@@ -32,6 +33,7 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.6: description corrected: an option crops the masters in place.
  * v1.1.5: Return in an edit box runs no button.
  * v1.1.4: deprecated names replaced. No change to the behaviour.
  * v1.1.3: warning for masters registered on a reference frame (WBPP,
@@ -48,7 +50,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.5";
+var VERSION = "1.1.6";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";

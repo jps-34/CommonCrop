@@ -1173,6 +1173,12 @@ constructor()
    {
       b.setMinWidth( b.font.width( b.text ) + buttonPadding );
    } );
+   // Same for the option check boxes, with the room of the box itself.
+   var boxRoom = this.logicalPixelsToPhysical( 28 );
+   [ this.previewCheck, this.renameCheck, this.inPlaceCheck ].forEach( function( c )
+   {
+      c.setMinWidth( c.font.width( c.text ) + boxRoom );
+   } );
 
    var buttons = new HorizontalSizer;
    buttons.spacing = 6;

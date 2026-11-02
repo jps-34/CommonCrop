@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.6 (unreleased)
+## 1.1.6 (2026-11-01)
 * Description corrected in the script, the update repository and the READMEs: the masters are not
   modified by default, and the *Crop in place* option crops them directly. No change to the behaviour.
 

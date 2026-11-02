@@ -1165,6 +1165,15 @@ constructor()
    this.closeButton.toolTip = TIPS.close;
    this.closeButton.icon = this.scaledResource( ":/icons/cancel.png" );
    this.closeButton.onClick = function() { saveSettings(); self.storeState(); self.ok(); };
+   // PixInsight gives push buttons a default width and does not widen it for a
+   // longer label: each button gets at least the width of its own label.
+   var buttonPadding = this.logicalPixelsToPhysical( 24 );
+   [ this.openButton, this.viewsButton, this.clearAllButton, this.removePreviewsButton,
+     this.computeButton, this.applyButton, this.closeButton ].forEach( function( b )
+   {
+      b.setMinWidth( b.font.width( b.text ) + buttonPadding );
+   } );
+
    var buttons = new HorizontalSizer;
    buttons.spacing = 6;
    buttons.addStretch();

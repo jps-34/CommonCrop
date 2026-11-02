@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+* Dialog: the buttons are no longer cut when their label is longer than the default button width
+  (*Open files...*, *Sort open views*, *Remove previews*, and their French labels).
+
 ## 1.1.6 (2026-11-01)
 * Description corrected in the script, the update repository and the READMEs: the masters are not
   modified by default, and the *Crop in place* option crops them directly. No change to the behaviour.

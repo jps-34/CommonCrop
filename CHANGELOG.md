@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.1.7 (2026-11-26)
 * Dialog: the buttons are no longer cut when their label is longer than the default button width
   (*Remove previews* was cut in French), nor the option check boxes (*Crop in place* was cut in
   French).

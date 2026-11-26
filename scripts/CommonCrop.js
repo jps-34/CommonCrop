@@ -8,7 +8,7 @@
    Interface in English or French.
 
 /*
- * CommonCrop.js  v1.1.6
+ * CommonCrop.js  v1.1.7
  * Copyright (c) 2026 Jacques Pouyaud.
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Free software under the GNU General Public License, version 3 or (at your
@@ -33,6 +33,7 @@
  *   sub-frame of that filter) serves as an acquisition quality indicator,
  *   ranked worst first.
  *
+ * v1.1.7: dialog buttons and option check boxes no longer cut.
  * v1.1.6: description corrected: an option crops the masters in place.
  * v1.1.5: Return in an edit box runs no button.
  * v1.1.4: deprecated names replaced. No change to the behaviour.
@@ -50,7 +51,7 @@
  */
 
 var TITLE = "CommonCrop";
-var VERSION = "1.1.6";
+var VERSION = "1.1.7";
 var LANG_KEY = "CommonCrop/language";
 var SETTINGS_KEY = "CommonCrop/settings10";
 var LANG = "en";

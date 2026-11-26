@@ -5,7 +5,8 @@ Build the PixInsight update repository served from docs/ (GitHub Pages).
   python3 tools/build_repo.py --user <github_user>
 
 Creates, for the current script version:
-  docs/CommonCrop-<version>-PI194.zip   V8 script, PixInsight 1.9.4 and later
+  docs/CommonCrop-<version>-PI195.zip   V8 script, PixInsight 1.9.5 and later
+                                        (signed with the CPD identity jps-34, known from 1.9.5 on)
   docs/updates.xri                      repository index (unsigned)
 
 The archive follows the layout required by PixInsight:
@@ -28,9 +29,9 @@ NAME = "CommonCrop"
 PACKAGES = [
     {
         "script": "scripts/CommonCrop.js",
-        "suffix": "PI194",
-        "version": "1.9.4:1.9.99",
-        "title": "CommonCrop {v} (PixInsight 1.9.4 and later)",
+        "suffix": "PI195",
+        "version": "1.9.5:1.9.99",
+        "title": "CommonCrop {v} (PixInsight 1.9.5 and later)",
         "desc": "Crops a set of integrated masters (L, R, G, B, SII, Ha, OIII and two auxiliary channels) "
                 "to the one rectangle covered by every sub-frame of every channel, from the masters alone. "
                 "Reports a field-loss score per filter and checks the noise at the crop edges. Creates new "

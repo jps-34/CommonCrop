@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.8 (2026-11-26)
+* The script and its update repository are signed with my Certified PixInsight Developer identity,
+  `jps-34`. No change to the behaviour.
+* The update repository now serves PixInsight 1.9.5 and later only: PixInsight recognises the `jps-34`
+  identity from version 1.9.5. If PixInsight reports an unknown code signing identity, install the
+  PixInsight update first (*Resources > Updates > Check for Updates*, then restart). PixInsight 1.9.4
+  users can still install the script by hand, without its signature file.
+
 ## 1.1.7 (2026-11-26)
 * Dialog: the buttons are no longer cut when their label is longer than the default button width
   (*Remove previews* was cut in French), nor the option check boxes (*Crop in place* was cut in

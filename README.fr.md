@@ -30,7 +30,7 @@ pleinement intégrés.
 
 ## Prérequis
 
-* PixInsight 1.9.4 ou plus.
+* PixInsight 1.9.5 ou plus par le dépôt de mises à jour (1.9.4 : installation à la main, voir plus bas).
 * Des masters de la même cible, tous intégrés sur la même brute de référence en composition
   *full* (mêmes dimensions, zéro là où rien n'est couvert).
 * La taille d'une brute : lue dans l'en-tête FITS pour les QHY600, ASI6200, ASI2600 et QHY268,
@@ -43,11 +43,17 @@ pleinement intégrés.
 ## Installation
 
 1. *Resources > Updates > Manage Repositories*, ajouter `https://jps-34.github.io/CommonCrop/`
-2. *Check for Updates*, redémarrer PixInsight (activer *Allow unsigned update repositories* tant
-   que le dépôt n'est pas signé).
+2. *Check for Updates*, redémarrer PixInsight. Le dépôt et le script sont signés avec mon identité
+   de développeur certifié PixInsight, `jps-34`, que PixInsight reconnaît à partir de la 1.9.5. Si
+   PixInsight signale une **identité de signature inconnue** (*unknown code signing identity*),
+   installer d'abord la mise à jour de PixInsight (*Check for Updates*, redémarrer), puis relancer la
+   recherche de mises à jour.
 3. *Script > JPS > CommonCrop* (*Script > Utilities* jusqu'à la 1.1.1).
 
-Ou télécharger `scripts/CommonCrop.js` et le lancer par *Script > Execute Script File*.
+Ou télécharger `scripts/CommonCrop.js` et le lancer par *Script > Execute Script File*. Avec
+PixInsight 1.9.5 et suivants, garder `CommonCrop.xsgn` à côté pour que sa signature soit vérifiée ;
+avec la 1.9.4, télécharger le `.js` seul (cette version ne connaît pas l'identité `jps-34` et
+refuserait le script signé).
 
 ## Utilisation
 

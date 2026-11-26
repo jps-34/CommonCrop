@@ -29,7 +29,7 @@ the masters alone and gives you `L_crop`, `R_crop`, ... all the same size and fu
 
 ## Requirements
 
-* PixInsight 1.9.4 or later.
+* PixInsight 1.9.5 or later through the update repository (1.9.4: manual installation, see below).
 * Masters of the same target, all integrated on the same reference frame in *full* composition
   (same dimensions, zero where nothing was covered).
 * The size of one sub-frame: read from the FITS header for QHY600, ASI6200, ASI2600 and QHY268,
@@ -41,11 +41,16 @@ the masters alone and gives you `L_crop`, `R_crop`, ... all the same size and fu
 ## Installation
 
 1. *Resources > Updates > Manage Repositories*, add `https://jps-34.github.io/CommonCrop/`
-2. *Check for Updates*, restart PixInsight (enable *Allow unsigned update repositories* until the
-   repository is signed).
+2. *Check for Updates*, restart PixInsight. The repository and the script are signed with my
+   Certified PixInsight Developer identity, `jps-34`, which PixInsight recognises from 1.9.5 on. If
+   PixInsight reports an **unknown code signing identity**, install the PixInsight update first
+   (*Check for Updates*, restart), then check for updates again.
 3. *Script > JPS > CommonCrop* (*Script > Utilities* up to 1.1.1).
 
-Or download `scripts/CommonCrop.js` and run it with *Script > Execute Script File*.
+Or download `scripts/CommonCrop.js` and run it with *Script > Execute Script File*. On PixInsight
+1.9.5 and later, keep `CommonCrop.xsgn` next to it so that its signature is checked; on 1.9.4,
+download the `.js` file alone (that version does not know the `jps-34` identity and would refuse the
+signed script).
 
 ## Usage
 
